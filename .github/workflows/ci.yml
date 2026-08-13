@@ -1,0 +1,52 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Static checks
+        run: |
+          ruff format --check .
+          ruff check .
+          python scripts/quality_gate.py
+          python scripts/export_openapi.py --check
+          python -m compileall -q src tests examples benchmarks scripts
+      - name: Tests and coverage
+        run: |
+          pytest --cov=reliable_agent_runtime --cov-report=term-missing --cov-report=xml
+      - name: Reliability acceptance
+        run: |
+          mkdir -p artifacts
+          python benchmarks/reliability_scenarios.py --output artifacts/acceptance.json
+      - name: Upload acceptance report
+        if: matrix.python-version == '3.13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-report
+          path: artifacts/acceptance.json
+      - name: Build wheel
+        run: python -m pip wheel . --no-deps --wheel-dir dist
+      - name: Upload coverage
+        if: matrix.python-version == '3.13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
