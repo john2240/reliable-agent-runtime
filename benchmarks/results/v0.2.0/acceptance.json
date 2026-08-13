@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-08-09T04:17:24.340561+00:00",
+  "passed": true,
+  "scenario_count": 3,
+  "scenarios": [
+    {
+      "name": "unknown_outcome_recovery_without_duplicate_refund",
+      "passed": true,
+      "elapsed_ms": 75.41,
+      "evidence": {
+        "waiting_status": "waiting_approval",
+        "final_status": "succeeded",
+        "refund_count": 1,
+        "outcome_recovery_events": 1
+      }
+    },
+    {
+      "name": "denied_approval_compensates_prior_write",
+      "passed": true,
+      "elapsed_ms": 53.57,
+      "evidence": {
+        "final_status": "failed_compensated",
+        "ticket_status": "open",
+        "refund_count": 0
+      }
+    },
+    {
+      "name": "create_run_idempotency",
+      "passed": true,
+      "elapsed_ms": 22.4,
+      "evidence": {
+        "same_resource_on_replay": true,
+        "replay_created": false,
+        "payload_conflict_detected": true
+      }
+    }
+  ]
+}
