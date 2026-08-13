@@ -1,0 +1,57 @@
+{
+  "objective": "Refund an eligible order, update the support ticket, and notify the customer.",
+  "actor": "demo-user",
+  "input": {
+    "order_id": "ord-1001",
+    "ticket_id": "tic-1001"
+  },
+  "plan": {
+    "id": "refund_order",
+    "name": "Refund an eligible order and update support state",
+    "compensate_on_failure": true,
+    "steps": [
+      {
+        "id": "read_order",
+        "tool": "retail.get_order",
+        "arguments": {
+          "order_id": "${input.order_id}"
+        },
+        "depends_on": [],
+        "description": "Read fresh order state instead of relying on planner context."
+      },
+      {
+        "id": "update_ticket",
+        "tool": "retail.update_ticket",
+        "arguments": {
+          "ticket_id": "${input.ticket_id}",
+          "status": "processing",
+          "note": "Refund processing for ${steps.read_order.output.order_id}"
+        },
+        "depends_on": ["read_order"],
+        "description": "Apply a compensatable write before the payment action."
+      },
+      {
+        "id": "refund",
+        "tool": "retail.issue_refund",
+        "arguments": {
+          "order_id": "${input.order_id}",
+          "amount_cents": "${steps.read_order.output.total_cents}",
+          "reason": "customer_request"
+        },
+        "depends_on": ["read_order", "update_ticket"],
+        "description": "Require approval and verify provider state after an ambiguous response."
+      },
+      {
+        "id": "notify",
+        "tool": "retail.send_email",
+        "arguments": {
+          "to": "${steps.read_order.output.customer_email}",
+          "subject": "Refund issued",
+          "body": "Refund ${steps.refund.output.refund_id} was issued."
+        },
+        "depends_on": ["refund"],
+        "description": "Notify only after the refund postcondition is confirmed."
+      }
+    ]
+  }
+}
