@@ -1,0 +1,15 @@
+services:
+  runtime:
+    build: .
+    environment:
+      RAR_ENVIRONMENT: production
+      RAR_DATABASE_URL: sqlite+pysqlite:////app/data/reliable_agent_runtime.db
+      RAR_DEMO_REFUND_UNKNOWN_OUTCOME_ONCE: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      - runtime-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  runtime-data:

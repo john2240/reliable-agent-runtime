@@ -1,0 +1,103 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reliable-agent-runtime"
+dynamic = ["version"]
+description = "Planner-agnostic runtime for reliable tool execution in adaptive agents."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Duoyuan Zhao" },
+]
+keywords = [
+  "agent",
+  "agent-runtime",
+  "tool-calling",
+  "workflow",
+  "idempotency",
+  "compensation",
+  "fastapi",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Framework :: FastAPI",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Typing :: Typed",
+]
+dependencies = [
+  "fastapi>=0.128,<1",
+  "pydantic>=2.11,<3",
+  "sqlalchemy>=2.0.50,<3",
+  "uvicorn>=0.34,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.28,<1",
+  "pytest>=9,<10",
+  "pytest-asyncio>=1.3,<2",
+  "pytest-cov>=7,<8",
+  "ruff>=0.16.2,<1",
+]
+
+[project.scripts]
+reliable-agent-runtime = "reliable_agent_runtime.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "reliable_agent_runtime.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+reliable_agent_runtime = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+branch = true
+source = ["reliable_agent_runtime"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 80
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "raise NotImplementedError",
+  "if __name__ == .__main__.:",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests", "examples", "scripts", "benchmarks"]
+
+[tool.ruff.lint]
+select = [
+  "E4",
+  "E7",
+  "E9",
+  "F",
+  "I",
+  "B",
+  "UP",
+]
+ignore = [
+  "B008", # FastAPI dependency declarations intentionally call Depends in defaults.
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+docstring-code-format = true
